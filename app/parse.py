@@ -1,32 +1,33 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
-from dataclasses import dataclass
 from typing import List
-import time
 
-BASE_URL = "https://mate.academy/"
+BASE_URL = "https://mate.academy/en/courses"
 
-@dataclass
-class Course:
-    name: str
-    short_description: str
-    duration: str
 
-def get_all_courses() -> List[Course]:
+def get_all_courses() -> List[dict]:
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(BASE_URL)
+
     time.sleep(5)
 
-    courses = []
-    course_blocks = driver.find_elements(By.CSS_SELECTOR, "div.card")
+    course_blocks = driver.find_elements(By.CSS_SELECTOR, "div.CareerPath_careerPathInfoContainer__FYKO5")
 
+    courses = []
     for block in course_blocks:
-        name = block.find_element(By.CSS_SELECTOR, "h3").text
-        desc = block.find_element(By.CSS_SELECTOR, "p").text
-        dur = block.find_element(By.CSS_SELECTOR, "span").text
-        courses.append(Course(name=name, short_description=desc, duration=dur))
+        name = block.find_element(By.CSS_SELECTOR, "h2.typography_platformH2__0YzKL").text
+        short_description = block.find_element(By.CSS_SELECTOR, "p.CareerPath_description__gNUVa").text
+        duration = block.find_element(By.CSS_SELECTOR,
+                                      "span.CareerPath_duration__someClass").text
+
+        courses.append({
+            "name": name,
+            "short_description": short_description,
+            "duration": duration,
+        })
 
     driver.quit()
     return courses
@@ -34,5 +35,5 @@ def get_all_courses() -> List[Course]:
 
 if __name__ == "__main__":
     all_courses = get_all_courses()
-    for c in all_courses:
-        print(c)
+    for course in all_courses:
+        print(course)
